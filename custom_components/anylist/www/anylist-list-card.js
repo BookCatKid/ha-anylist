@@ -5,20 +5,36 @@ class AnyListListCard extends HTMLElement {
     }
 
     this._config = config;
+    this.setupCard();
+  }
 
+  async setupCard() {
+    // Dynamically load Home Assistant card helpers to properly initialize standard cards
+    const helpers = await window.loadCardHelpers();
+    
     if (!this._card) {
-      this._card = document.createElement("hui-todo-list-card");
+      this._card = helpers.createCardElement({
+        type: "todo-list",
+        entity: this._config.entity,
+        title: this._config.title || "AnyList",
+      });
+      
+      if (this._hass) {
+        this._card.hass = this._hass;
+      }
+      
       this.appendChild(this._card);
+    } else {
+      this._card.setConfig({
+        type: "todo-list",
+        entity: this._config.entity,
+        title: this._config.title || "AnyList",
+      });
     }
-
-    this._card.setConfig({
-      type: "todo-list",
-      entity: config.entity,
-      title: config.title || "AnyList",
-    });
   }
 
   set hass(hass) {
+    this._hass = hass;
     if (this._card) {
       this._card.hass = hass;
     }
