@@ -62,6 +62,42 @@ class AnyListListCardEditor extends HTMLElement {
 
     if (!this.shadowRoot) {
       this.attachShadow({ mode: "open" });
+      this.shadowRoot.innerHTML = `
+        <style>
+          .wrapper {
+            display: grid;
+            gap: 12px;
+          }
+          label {
+            display: grid;
+            gap: 6px;
+            font-size: 14px;
+          }
+          select, input {
+            padding: 8px;
+            font: inherit;
+          }
+        </style>
+        <div class="wrapper">
+          <label>
+            AnyList list entity
+            <select id="entity"></select>
+          </label>
+          <label>
+            Card title
+            <input id="title" type="text" placeholder="AnyList" />
+          </label>
+        </div>
+      `;
+
+      this._entitySelect = this.shadowRoot.querySelector("#entity");
+      this._titleInput = this.shadowRoot.querySelector("#title");
+      this._entitySelect?.addEventListener("change", (event) => {
+        this._updateConfig({ entity: event.target.value });
+      });
+      this._titleInput?.addEventListener("change", (event) => {
+        this._updateConfig({ title: event.target.value });
+      });
     }
 
     const currentEntity = this._config?.entity || "";
@@ -70,47 +106,20 @@ class AnyListListCardEditor extends HTMLElement {
       .filter((entityId) => entityId.startsWith("todo."))
       .sort();
 
-    this.shadowRoot.innerHTML = `
-      <style>
-        .wrapper {
-          display: grid;
-          gap: 12px;
-        }
-        label {
-          display: grid;
-          gap: 6px;
-          font-size: 14px;
-        }
-        select, input {
-          padding: 8px;
-          font: inherit;
-        }
-      </style>
-      <div class="wrapper">
-        <label>
-          AnyList list entity
-          <select id="entity">
-            ${todoEntities
-              .map(
-                (entityId) =>
-                  `<option value="${entityId}" ${entityId === currentEntity ? "selected" : ""}>${entityId}</option>`
-              )
-              .join("")}
-          </select>
-        </label>
-        <label>
-          Card title
-          <input id="title" type="text" value="${currentTitle}" placeholder="AnyList" />
-        </label>
-      </div>
-    `;
+    if (this._entitySelect) {
+      this._entitySelect.textContent = "";
+      for (const entityId of todoEntities) {
+        const option = document.createElement("option");
+        option.value = entityId;
+        option.textContent = entityId;
+        option.selected = entityId === currentEntity;
+        this._entitySelect.appendChild(option);
+      }
+    }
 
-    this.shadowRoot.querySelector("#entity")?.addEventListener("change", (event) => {
-      this._updateConfig({ entity: event.target.value });
-    });
-    this.shadowRoot.querySelector("#title")?.addEventListener("change", (event) => {
-      this._updateConfig({ title: event.target.value });
-    });
+    if (this._titleInput) {
+      this._titleInput.value = currentTitle;
+    }
   }
 
   _updateConfig(changes) {
