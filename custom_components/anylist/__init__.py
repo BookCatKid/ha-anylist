@@ -5,6 +5,7 @@ import logging
 from datetime import timedelta
 from typing import Any
 
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -25,6 +26,8 @@ _LOGGER = logging.getLogger(__name__)
 
 # Base platforms always loaded
 BASE_PLATFORMS: list[Platform] = [Platform.TODO]
+CARD_RESOURCE_URL = "/anylist/list-card.js"
+CARD_RESOURCE_KEY = "card_resource_registered"
 
 
 def get_platforms(entry: ConfigEntry) -> list[Platform]:
@@ -43,6 +46,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except ImportError as err:
         _LOGGER.error("Failed to import pyanylist: %s", err)
         return False
+
+    hass.data.setdefault(DOMAIN, {})
+    if not hass.data[DOMAIN].get(CARD_RESOURCE_KEY):
+        await hass.http.async_register_static_paths(
+            [
+                StaticPathConfig(
+                    CARD_RESOURCE_URL,
+                    hass.config.path(
+                        "custom_components",
+                        DOMAIN,
+                        "www",
+                        "anylist-list-card.js",
+                    ),
+                    cache_headers=False,
+                )
+            ]
+        )
+        hass.data[DOMAIN][CARD_RESOURCE_KEY] = True
 
     email = entry.data[CONF_EMAIL]
     password = entry.data[CONF_PASSWORD]
@@ -92,7 +113,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Fetch initial data
     await coordinator.async_config_entry_first_refresh()
 
-    hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {
         DATA_CLIENT: client,
         DATA_COORDINATOR: coordinator,

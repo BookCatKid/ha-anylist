@@ -37,6 +37,15 @@ Each AnyList shopping list appears as a todo entity. You can:
 - Check off items
 - Remove items
 
+## Dashboard Card
+
+This integration includes a simple Lovelace card for showing a single AnyList list on your dashboard.
+
+1. Go to **Settings → Dashboards → Resources**.
+2. Add a resource with URL: `/anylist/list-card.js` and type: **JavaScript Module**.
+3. Edit a dashboard and add a card with type: **Custom: AnyList List Card**.
+4. In the card settings, select the AnyList todo entity you want to display.
+
 ### Meal Plan iCalendar URL Sensor
 
 If you enable the meal plan option during setup, a diagnostic sensor is created containing your AnyList iCalendar URL. You can use this URL with Home Assistant's built-in [iCal integration](https://www.home-assistant.io/integrations/ical/) to display your meal plan as a calendar:
